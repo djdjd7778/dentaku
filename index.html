@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>横画面基本の特殊関数電卓</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .calculator {
+            width: 600px; /* 横長に広げて横画面を基本とする */
+            background-color: #333;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .display {
+            width: 100%;
+            height: 50px;
+            background-color: #222;
+            color: #fff;
+            font-size: 24px;
+            text-align: right;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr); /* 6列に増やして横長レイアウト */
+            gap: 10px;
+        }
+        button {
+            height: 50px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #666;
+            color: #fff;
+        }
+        button:hover {
+            background-color: #888;
+        }
+        .function {
+            background-color: #444;
+        }
+        .equal {
+            grid-column: span 2;
+            background-color: #f39c12;
+        }
+        .clear {
+            background-color: #e74c3c;
+        }
+        .memory {
+            background-color: #9b59b6;
+        }
+        .portrait-message {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        @media (orientation: portrait) and (max-width: 768px) {
+            .portrait-message {
+                display: flex;
+            }
+            .calculator {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="portrait-message">
+        <p>この電卓は横画面で最適に動作します。<br>デバイスを横向きに回転してください。</p>
+    </div>
+    <div class="calculator">
+        <input type="text" class="display" id="display" readonly>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button onclick="appendToDisplay('(')">(</button>
+            <button onclick="appendToDisplay(')')">)</button>
+            <button onclick="appendToDisplay('/')">/</button>
+            <button onclick="appendToDisplay('^')">^</button>
+            <button onclick="appendToDisplay('Math.PI')">π</button>
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button onclick="appendToDisplay('*')">*</button>
+            <button class="function" onclick="appendToDisplay('fact(')">n!</button>
+            <button class="function" onclick="appendToDisplay('Math.E')">e</button>
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button onclick="appendToDisplay('-')">-</button>
+            <button class="function" onclick="appendToDisplay('comb(')">nCr</button>
+            <button class="function" onclick="appendToDisplay('Math.sin(')">sin</button>
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button onclick="appendToDisplay('+')">+</button>
+            <button class="function" onclick="appendToDisplay('perm(')">nPr</button>
+            <button class="function" onclick="appendToDisplay('Math.cos(')">cos</button>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button class="equal" onclick="calculate()">=</button>
+            <button class="function" onclick="appendToDisplay('exp(')">e^x</button>
+            <button class="function" onclick="appendToDisplay('Math.tan(')">tan</button>
+            <button class="function" onclick="appendToDisplay('Math.asin(')">asin</button>
+            <button class="function" onclick="appendToDisplay('Math.acos(')">acos</button>
+            <button class="function" onclick="appendToDisplay('Math.atan(')">atan</button>
+            <button class="function" onclick="appendToDisplay('Math.log(')">ln</button>
+            <button class="function" onclick="appendToDisplay('Math.log10(')">log10</button>
+            <button class="function" onclick="appendToDisplay('Math.sqrt(')">sqrt</button>
+            <button class="function" onclick="appendToDisplay('Math.abs(')">|x|</button>
+            <button class="memory" onclick="memoryStore()">M+</button>
+            <button class="memory" onclick="memoryRecall()">MR</button>
+            <button class="memory" onclick="memoryClear()">MC</button>
+            <button class="memory" onclick="memorySubtract()">M-</button>
+        </div>
+    </div>
+    <script>
+        let display = document.getElementById('display');
+        let memory = 0;
+
+        function appendToDisplay(value) {
+            display.value += value;
+        }
+
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        function calculate() {
+            try {
+                let expression = display.value;
+                // 特殊関数を置き換え
+                expression = expression.replace(/fact\(/g, 'factorial(');
+                expression = expression.replace(/comb\(/g, 'combination(');
+                expression = expression.replace(/perm\(/g, 'permutation(');
+                expression = expression.replace(/exp\(/g, 'Math.exp(');
+                expression = expression.replace(/\^/g, '**'); // べき乗
+                display.value = eval(expression);
+            } catch (error) {
+                display.value = 'Error';
+            }
+        }
+
+        function factorial(n) {
+            if (n < 0) return 'Error';
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) {
+                result *= i;
+            }
+            return result;
+        }
+
+        function combination(n, r) {
+            if (r > n || r < 0 || n < 0) return 'Error';
+            return factorial(n) / (factorial(r) * factorial(n - r));
+        }
+
+        function permutation(n, r) {
+            if (r > n || r < 0 || n < 0) return 'Error';
+            return factorial(n) / factorial(n - r);
+        }
+
+        function memoryStore() {
+            memory += parseFloat(display.value) || 0;
+        }
+
+        function memoryRecall() {
+            display.value = memory;
+        }
+
+        function memoryClear() {
+            memory = 0;
+        }
+
+        function memorySubtract() {
+            memory -= parseFloat(display.value) || 0;
+        }
+    </script>
+</body>
+</html>
