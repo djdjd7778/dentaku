@@ -32,14 +32,23 @@
             border: none;
             border-radius: 5px;
             margin-bottom: 10px;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out; /* フェードイン/アウトのトランジション */
         }
         .display.hidden-feature {
             background-color: red;
-            animation: blink 1s infinite;
+            animation: fadeIn 0.5s ease-in-out;
         }
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.5; }
+        .display.fade-out {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
         .buttons {
             display: grid;
@@ -101,7 +110,7 @@
         <p>この電卓は横画面で最適に動作します。<br>デバイスを横向きに回転してください。</p>
     </div>
     <div class="calculator">
-        <input type="text" class="display" id="display" readonly>
+        <input type="text" class="display" id="display"> <!-- キーボード入力を許可 -->
         <div class="buttons">
             <button class="clear" onclick="clearDisplay()">C</button>
             <button onclick="appendToDisplay('(')">(</button>
@@ -149,26 +158,40 @@
         let display = document.getElementById('display');
         let memory = 0;
 
+        // キーボードイベントリスナー
+        display.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // デフォルトのEnter動作を防ぐ
+                calculate();
+            } else if (event.key === 'Escape') {
+                event.preventDefault(); // デフォルトのEsc動作を防ぐ
+                clearDisplay();
+            }
+        });
+
         function appendToDisplay(value) {
             display.value += value;
             // 隠し機能をリセット（通常の入力に戻す）
-            display.classList.remove('hidden-feature');
+            display.classList.remove('hidden-feature', 'fade-out');
         }
 
         function clearDisplay() {
             display.value = '';
-            display.classList.remove('hidden-feature');
+            display.classList.remove('hidden-feature', 'fade-out');
         }
 
         function calculate() {
             if (display.value === '1+') {
-                // 隠し機能: ディスプレイを赤くし、「Never Settle」をアニメーション付きで表示
+                // 隠し機能: ディスプレイを赤くし、「Never Settle」をフェードインで表示
                 display.classList.add('hidden-feature');
                 display.value = 'Never Settle';
-                // 5秒後に削除
+                // 5秒後にフェードアウトを開始し、終了後にリセット
                 setTimeout(() => {
-                    display.value = '';
-                    display.classList.remove('hidden-feature');
+                    display.classList.add('fade-out');
+                    setTimeout(() => {
+                        display.value = '';
+                        display.classList.remove('hidden-feature', 'fade-out');
+                    }, 500); // フェードアウトアニメーションの時間
                 }, 5000);
             } else {
                 try {
@@ -180,10 +203,10 @@
                     expression = expression.replace(/exp\(/g, 'Math.exp(');
                     expression = expression.replace(/\^/g, '**'); // べき乗
                     display.value = eval(expression);
-                    display.classList.remove('hidden-feature');
+                    display.classList.remove('hidden-feature', 'fade-out');
                 } catch (error) {
                     display.value = 'Error';
-                    display.classList.remove('hidden-feature');
+                    display.classList.remove('hidden-feature', 'fade-out');
                 }
             }
         }
@@ -214,7 +237,7 @@
 
         function memoryRecall() {
             display.value = memory;
-            display.classList.remove('hidden-feature');
+            display.classList.remove('hidden-feature', 'fade-out');
         }
 
         function memoryClear() {
