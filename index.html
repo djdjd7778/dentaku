@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>特殊関数電卓</title>
+    <title>隠し機能付き横画面基本の特殊関数電卓（アニメーション修正版）</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,6 +32,14 @@
             border: none;
             border-radius: 5px;
             margin-bottom: 10px;
+        }
+        .display.hidden-feature {
+            background-color: red;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
         }
         .buttons {
             display: grid;
@@ -143,24 +151,40 @@
 
         function appendToDisplay(value) {
             display.value += value;
+            // 隠し機能をリセット（通常の入力に戻す）
+            display.classList.remove('hidden-feature');
         }
 
         function clearDisplay() {
             display.value = '';
+            display.classList.remove('hidden-feature');
         }
 
         function calculate() {
-            try {
-                let expression = display.value;
-                // 特殊関数を置き換え
-                expression = expression.replace(/fact\(/g, 'factorial(');
-                expression = expression.replace(/comb\(/g, 'combination(');
-                expression = expression.replace(/perm\(/g, 'permutation(');
-                expression = expression.replace(/exp\(/g, 'Math.exp(');
-                expression = expression.replace(/\^/g, '**'); // べき乗
-                display.value = eval(expression);
-            } catch (error) {
-                display.value = 'Error';
+            if (display.value === '1+') {
+                // 隠し機能: ディスプレイを赤くし、「Never Settle」をアニメーション付きで表示
+                display.classList.add('hidden-feature');
+                display.value = 'Never Settle';
+                // 5秒後に削除
+                setTimeout(() => {
+                    display.value = '';
+                    display.classList.remove('hidden-feature');
+                }, 5000);
+            } else {
+                try {
+                    let expression = display.value;
+                    // 特殊関数を置き換え
+                    expression = expression.replace(/fact\(/g, 'factorial(');
+                    expression = expression.replace(/comb\(/g, 'combination(');
+                    expression = expression.replace(/perm\(/g, 'permutation(');
+                    expression = expression.replace(/exp\(/g, 'Math.exp(');
+                    expression = expression.replace(/\^/g, '**'); // べき乗
+                    display.value = eval(expression);
+                    display.classList.remove('hidden-feature');
+                } catch (error) {
+                    display.value = 'Error';
+                    display.classList.remove('hidden-feature');
+                }
             }
         }
 
@@ -190,6 +214,7 @@
 
         function memoryRecall() {
             display.value = memory;
+            display.classList.remove('hidden-feature');
         }
 
         function memoryClear() {
